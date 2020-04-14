@@ -1,5 +1,5 @@
 from Draughts.Piece import Piece
-
+import logging
 
 class Game:
 
@@ -102,37 +102,40 @@ class Game:
         # There is no piece at this coord
         if move.getPiece() is None:
             print("There is no piece here!")
+            logging.error("Player \"%s\" attempted to move a piece from somewhere there was not a piece" % (move.getPlayer().getName()))
             return False
 
         # The Player who made the move does not own the piece
         if move.getPlayer().getFaction() != move.getPiece().getAllegiance():
             print("you do not own that piece!")
+            logging.error("Player \"%s\" attempted to move the piece at position %s, but does not own this piece" % (move.getPlayer().getName(), move.getPiece().getPosition()))
             return False
 
         # The Target is not Empty
         if move.getTarget() in self.__pieces.keys():
+            logging.error("Player \"%s\" attempted to move the piece at position %s, to position %s which is not empty" % (move.getPlayer().getName(), move.getPiece().getPosition(), move.getTarget()))
             print("This space is not empty!")
             return False
 
         # TODO: extract this into helper method
-        # TODO: this rule does not apply to kings
+        # TODO: Kings dont follow this rule
         # If the target is not diagonally adjacent to the piece (with no capture). This rule does not apply to Kings.
 
         # get a row index from 0-4 of the piece and target
         pieceColumnIndex  = (int(move.getPiece().getPosition()) - 1) % 5
         targetColumnIndex = (int(move.getTarget()) - 1) % 5
         pieceRow = int(move.getPiece().getPosition() / 5) + 1
-
-
+        logging.debug("pieceColumnIndex: %s. targetColumnIndex: %s. pieceRow:%s. pieceRowEven: %s" % (
+        pieceColumnIndex, targetColumnIndex, pieceRow, pieceRow % 2 == 0))
         # In even Rows the diagonally adjacent pieces are in column indices equal to or + 1 of the piece's column
         # In Odd rows it is equal to or -1
         if not pieceColumnIndex == targetColumnIndex:
-
             if pieceRow % 2 == 0 and not pieceColumnIndex - 1 == targetColumnIndex:
+                logging.error("Player \"%s\" attempted to move the piece at %s to %s, but this piece cannot move there" % (move.getPlayer().getName(), move.getPiece().getPosition(), move.getTarget()))
                 print("This piece cannot move there!")
                 return False
-
             if pieceRow % 2 != 0 == "B" and not pieceColumnIndex + 1 == targetColumnIndex:
+                logging.error("Player \"%s\" attempted to move the piece at %s to %s, but this piece cannot move there" % (move.getPlayer().getName(), move.getPiece().getPosition(), move.getTarget()))
                 print("This piece cannot move there!")
                 return False
 

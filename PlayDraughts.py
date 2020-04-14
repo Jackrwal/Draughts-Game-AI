@@ -1,5 +1,6 @@
 from Draughts.Game import Game
 from Draughts.Player import Player
+import logging
 
 def getPieceDisplayChar(string):
 
@@ -17,7 +18,6 @@ def getPieceDisplayChar(string):
 def displayGameToConsole(game):
     stateString = game.getStateString()
     #print(stateString)
-    logging = False
 
     print('/-----------------\\')
     for i in range(0, 10):
@@ -32,7 +32,7 @@ def displayGameToConsole(game):
                 # Even squares are empty
                 if j % 2 == 0:
                     line += "  "
-                    if logging: print("i: %s, j:%s, board: %s, Line: %s" % (i, j, boardIndex, line))
+                    logging.debug("i: %s, j:%s, board: %s, Line: %s" % (i, j, boardIndex, line))
 
                 else:
                     pieceIndex = int((5*i + (j/2)) + 1)
@@ -43,7 +43,7 @@ def displayGameToConsole(game):
                     else:
                         line +=  getPieceDisplayChar(stateString[pieceIndex - 1])
 
-                    if logging: print("i: %s, j:%s, board: %s, piece: %s,  stateString: %s, line: %s" % (i, j, boardIndex, pieceIndex, stateString[pieceIndex - 1], line))
+                    logging.debug("i: %s, j:%s, board: %s, piece: %s,  stateString: %s, line: %s" % (i, j, boardIndex, pieceIndex, stateString[pieceIndex - 1], line))
 
             # For Odd Rows
             else:
@@ -51,7 +51,7 @@ def displayGameToConsole(game):
                 # Odd rows are empty
                 if j % 2 != 0:
                     line += "  "
-                    if logging: print("i: %s, j:%s, board: %s, Line: %s" % (i, j, boardIndex, line))
+                    logging.debug("i: %s, j:%s, board: %s, Line: %s" % (i, j, boardIndex, line))
 
                 else:
                     pieceIndex = int((5 * i + (j / 2)) + 1)
@@ -62,13 +62,16 @@ def displayGameToConsole(game):
                     else:
                         line += getPieceDisplayChar(stateString[pieceIndex - 1])
 
-                    if logging: print("i: %s, j:%s, board: %s, piece: %s,  stateString: %s, line: %s" % (i, j, boardIndex, pieceIndex, stateString[pieceIndex - 1], line))
+
+                    logging.debug("i: %s, j:%s, board: %s, piece: %s,  stateString: %s, line: %s" % (i, j, boardIndex, pieceIndex, stateString[pieceIndex - 1], line))
 
         print(line + " |")
     print('\\-----------------/')
 
 
 # end function
+
+logging.basicConfig(level=logging.ERROR)
 
 player1 = Player("Player One", "W")
 player2 = Player("Player Two", "B")

@@ -25,6 +25,21 @@ class Game:
             "Wm", "Wm", "Wm", "Wm", "Wm",
         ]
 
+    @staticmethod
+    def __buildPieceListFromStringArray(stringArray):
+
+        pieces = {}
+
+        # Build a list of pieces on the bord from the string array representation
+        for i in range(0, len(stringArray)):
+
+            # If there is a piece in this place add it to the list
+
+            if stringArray[i] != "-1":
+                pieces[str(i + 1)] = Piece("%s:%s" % (stringArray[i], i + 1))
+
+        return pieces
+
     # attributes
 
     __player1 = object
@@ -41,20 +56,24 @@ class Game:
         self.__player1 = player1
         self.__player2 = player2
 
-        self.__pieces = self.__buildPieceListFromStringArray(Game.__getStartStateString())
+        self.__pieces = Game.__buildPieceListFromStringArray(Game.__getStartStateString())
 
         # self.__showPieces()
 
     # methods
 
-    # TODO: Check move is valid and implement taking
+    # TODO later i will probably implement a 'get valid moves' method for a given Piece
+    #  This will later allow the user to highlight a piece in the GUI and get a list of valid moves
+
     # Updates the state of the game by carrying out a given move if the move is valid
     def makeMove(self, move):
-        piece = move.getPiece()
 
-        if piece is None:
-            print("no piece found at this position")
+        # If the move the user has given is not a valid move return
+        if not self.checkMoveValid(move):
             return
+
+        piece = move.getPiece()
+        target = int(move.getTarget())
 
         # remove the piece from the board
         self.__pieces.pop(str(piece.getPosition()))
@@ -63,7 +82,66 @@ class Game:
         self.__pieces[move.getTarget()] = piece
 
         # update the pieces internal position
-        self.__pieces[move.getTarget()].setPosition(move.getTarget())
+        self.__pieces[move.getTarget()].setPosition(target)
+
+    def checkMoveValid(self, move):
+
+        # If there are any possible captures, the player must take them.
+        # This is done first as if their move is not in this list it is irrelevant
+        # TODO Check every piece the player has for a list of available captures
+        # TODO: When we have this list of captures, the player must choose one which leads to the highest score
+        #  (LiDraughts forces you to this, but i think it could be more interesting to let the AI learn this)
+
+        # Kings can move, and take over any distance
+        # (But may only take 1 draught with out a gap between, but this gap can be of any size)
+        #
+        # men may move 2 forwards or backwards when taking
+
+        # Return True if the move is in the sequence of a highest scoring capture
+
+        # There is no piece at this coord
+        if move.getPiece() is None:
+            print("There is no piece here!")
+            return False
+
+        # The Player who made the move does not own the piece
+        if move.getPlayer().getFaction() != move.getPiece().getAllegiance():
+            print("you do not own that piece!")
+            return False
+
+        # The Target is not Empty
+        if move.getTarget() in self.__pieces.keys():
+            print("This space is not empty!")
+            return False
+
+        # TODO: extract this into helper method
+        # TODO: this rule does not apply to kings
+        # If the target is not diagonally adjacent to the piece (with no capture). This rule does not apply to Kings.
+
+        # get a row index from 0-4 of the piece and target
+        pieceColumnIndex  = (int(move.getPiece().getPosition()) - 1) % 5
+        targetColumnIndex = (int(move.getTarget()) - 1) % 5
+        pieceRow = int(move.getPiece().getPosition() / 5) + 1
+
+
+        # In even Rows the diagonally adjacent pieces are in column indices equal to or + 1 of the piece's column
+        # In Odd rows it is equal to or -1
+        if not pieceColumnIndex == targetColumnIndex:
+
+            if pieceRow % 2 == 0 and not pieceColumnIndex - 1 == targetColumnIndex:
+                print("This piece cannot move there!")
+                return False
+
+            if pieceRow % 2 != 0 == "B" and not pieceColumnIndex + 1 == targetColumnIndex:
+                print("This piece cannot move there!")
+                return False
+
+        # TODO: For kings we must check that the target is diagonal from the piece
+
+        return True
+
+#    def evaluateGameWon(self):
+#        return
 
     def endGame(self):
         self.__gameOver = True
@@ -113,20 +191,7 @@ class Game:
 
         return self.__pieces[str(coordinate)]
 
-    # private functions
-    def __buildPieceListFromStringArray(self, stringArray):
-
-        pieces = {}
-
-        # Build a list of pieces on the bord from the string array representation
-        for i in range(0, len(stringArray)):
-
-            # If there is a piece in this place add it to the list
-
-            if stringArray[i] != "-1":
-                pieces[str(i + 1)] = Piece("%s:%s" % (stringArray[i], i + 1))
-
-        return pieces
+    # Helpers
 
     def __showPieces(self):
 

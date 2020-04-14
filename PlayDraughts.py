@@ -75,14 +75,19 @@ player2 = Player("Player Two", "B")
 
 game = Game(player1, player2)
 
+moveCounter = 0
 while not game.getGameOver():
     displayGameToConsole(game)
 
-    move = player1.getMove(game)
+    if moveCounter % 2 == 0:
+        move = player1.getMove(game)
+    else:
+        move = player2.getMove(game)
 
     if move == "q":
         game.endGame()
     else:
         game.makeMove(move)
 
+    moveCounter += 1
 

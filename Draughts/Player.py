@@ -15,8 +15,8 @@ class Player:
     # TODO: input validation
     # functions
     def getMove(self, game):
-        move = input("%s .Enter the position of a draught (1-50 top-left to bottom-right) and the position to move it to " % self.__name +
-                     "in the format '31:27'. \n\r" +
+        move = input("%s. Enter the position of a draught (1-50 top-left to bottom-right) " % self.__name +
+                     "and the position to move it to in the format '31:27'. \n\r" +
                      "Enter 'q' to quit. \n\r")
 
         if move == "q":

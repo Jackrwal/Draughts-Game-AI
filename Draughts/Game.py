@@ -125,15 +125,18 @@ class Game:
         pieceColumnIndex  = (int(move.getPiece().getPosition()) - 1) % 5
         targetColumnIndex = (int(move.getTarget()) - 1) % 5
         pieceRow = int(move.getPiece().getPosition() / 5) + 1
-        logging.debug("pieceColumnIndex: %s. targetColumnIndex: %s. pieceRow:%s. pieceRowEven: %s" % (
-        pieceColumnIndex, targetColumnIndex, pieceRow, pieceRow % 2 == 0))
+
+        logging.debug("pieceColumnIndex: %s. targetColumnIndex: %s. pieceRow:%s. pieceRowEven: %s" % (pieceColumnIndex, targetColumnIndex, pieceRow,  pieceRow % 2 == 0))
+
         # In even Rows the diagonally adjacent pieces are in column indices equal to or + 1 of the piece's column
         # In Odd rows it is equal to or -1
         if not pieceColumnIndex == targetColumnIndex:
+
             if pieceRow % 2 == 0 and not pieceColumnIndex - 1 == targetColumnIndex:
                 logging.error("Player \"%s\" attempted to move the piece at %s to %s, but this piece cannot move there" % (move.getPlayer().getName(), move.getPiece().getPosition(), move.getTarget()))
                 print("This piece cannot move there!")
                 return False
+
             if pieceRow % 2 != 0 == "B" and not pieceColumnIndex + 1 == targetColumnIndex:
                 logging.error("Player \"%s\" attempted to move the piece at %s to %s, but this piece cannot move there" % (move.getPlayer().getName(), move.getPiece().getPosition(), move.getTarget()))
                 print("This piece cannot move there!")
@@ -204,23 +207,3 @@ class Game:
             line += " %s%s:%s" % (ps[k].getAllegiance(), ps[k].getPieceState(), k)
 
         print(line)
-
-#    def checkMoveValid(self, move):
-#
-#        # If there are any possible captures, the player must take them.
-#        # This is done first as if their move is not in this list it is irrelevant
-#        # TODO Check every piece the player has for a list of available captures
-#
-#        # There is no piece at this coord
-#        if move.getPiece() is None:
-#            return False
-#
-#        # The Player who made the move does not own the piece
-#        if move.getPlayer().getFaction() != move.getPiece().getAllegiance():
-#            return False
-#
-#        # The Target is not Empty
-#
-#        # If the
-#
-#        return True

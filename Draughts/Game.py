@@ -1,61 +1,9 @@
 from Draughts.Piece import Piece
+from Draughts.Utils import Utils
 import logging
 
 
 class Game:
-
-    # static methods
-
-    # Returns the column and row of a piece based on its 1-50 index
-    @staticmethod
-    def getCartesianCoordinate(pieceIndex):
-
-        row = int((pieceIndex - 1) / 5) + 1
-
-        columnInRow = ((pieceIndex -1)  % 5) + 1
-
-        if row % 2 == 0:
-            column = (columnInRow * 2) - 1
-        else:
-            column = columnInRow * 2
-
-        return tuple([column, row])
-
-    @staticmethod
-    def __getStartStateString():
-        #  W - White
-        #  B - Black
-        #  m - Man
-        #  B - King
-        # -1 - Empty
-
-        return [
-            "Bm", "Bm", "Bm", "Bm", "Bm",
-            "Bm", "Bm", "Bm", "Bm", "Bm",
-            "Bm", "Bm", "Bm", "Bm", "Bm",
-            "Bm", "Bm", "Bm", "Bm", "Bm",
-            "-1", "-1", "-1", "-1", "-1",
-            "-1", "-1", "-1", "-1", "-1",
-            "Wm", "Wm", "Wm", "Wm", "Wm",
-            "Wm", "Wm", "Wm", "Wm", "Wm",
-            "Wm", "Wm", "Wm", "Wm", "Wm",
-            "Wm", "Wm", "Wm", "Wm", "Wm",
-        ]
-
-    @staticmethod
-    def __buildPieceListFromStringArray(stringArray):
-
-        pieces = {}
-
-        # Build a list of pieces on the bord from the string array representation
-        for i in range(0, len(stringArray)):
-
-            # If there is a piece in this place add it to the list
-
-            if stringArray[i] != "-1":
-                pieces[str(i + 1)] = Piece("%s:%s" % (stringArray[i], i + 1))
-
-        return pieces
 
     # attributes
 
@@ -74,7 +22,7 @@ class Game:
         self.__player1 = player1
         self.__player2 = player2
 
-        self.__pieces = Game.__buildPieceListFromStringArray(Game.__getStartStateString())
+        self.__pieces = Utils.buildPieceListFromStringArray(Utils.getStartStateString())
 
         # self.__showPieces()
 
@@ -221,8 +169,8 @@ class Game:
         # If the target is not diagonally adjacent to the piece (with no capture). This rule does not apply to Kings.
         if move.getPiece().getPieceState() != "K":
 
-            pieceCoord = Game.getCartesianCoordinate(move.getPiece().getPosition())
-            targetCoord = Game.getCartesianCoordinate(move.getTarget())
+            pieceCoord = Utils.getCartesianCoordinate(move.getPiece().getPosition())
+            targetCoord = Utils.getCartesianCoordinate(move.getTarget())
 
             validMoves = []
             if move.getPiece().getAllegiance() == "W":
@@ -239,8 +187,8 @@ class Game:
 
         if move.getPiece().getPieceState() == "K":
 
-            pieceBoardCoord = Game.getCartesianCoordinate(move.getPiece().getPosition())
-            targetBoardCoord = Game.getCartesianCoordinate(move.getTarget())
+            pieceBoardCoord = Utils.getCartesianCoordinate(move.getPiece().getPosition())
+            targetBoardCoord = Utils.getCartesianCoordinate(move.getTarget())
 
             columnDiff = targetBoardCoord[0] - pieceBoardCoord[0]
             rowDiff = targetBoardCoord[1] - pieceBoardCoord[1]

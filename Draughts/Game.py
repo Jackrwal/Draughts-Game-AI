@@ -1,9 +1,25 @@
 from Draughts.Piece import Piece
 import logging
 
+
 class Game:
 
     # static methods
+
+    # Returns the column and row of a piece based on its 1-50 index
+    @staticmethod
+    def getCartesianCoordinate(pieceIndex):
+
+        row = int((pieceIndex - 1) / 5) + 1
+
+        columnInRow = ((pieceIndex -1)  % 5) + 1
+
+        if row % 2 == 0:
+            column = (columnInRow * 2) - 1
+        else:
+            column = columnInRow * 2
+
+        return tuple([column, row])
 
     @staticmethod
     def __getStartStateString():
@@ -12,6 +28,7 @@ class Game:
         #  m - Man
         #  B - King
         # -1 - Empty
+
         return [
             "Bm", "Bm", "Bm", "Bm", "Bm",
             "Bm", "Bm", "Bm", "Bm", "Bm",
@@ -47,6 +64,7 @@ class Game:
     __gameOver = False
     __gameWon = False
 
+    # Dictionary of pieces on the boards. Key is string of the piece's 1-50 position.
     __pieces = {}
 
     # constructor
@@ -75,14 +93,20 @@ class Game:
         piece = move.getPiece()
         target = int(move.getTarget())
 
+        # if this piece has reached the back Row make it a king
+        if (piece.getAllegiance() == "W" and target < 6) or (piece.getAllegiance() == "B" and target > 45):
+            piece.setKing()
+
         # remove the piece from the board
         self.__pieces.pop(str(piece.getPosition()))
 
         # place the piece at the target
-        self.__pieces[move.getTarget()] = piece
+        self.__pieces[str(move.getTarget())] = piece
 
         # update the pieces internal position
-        self.__pieces[move.getTarget()].setPosition(target)
+        self.__pieces[str(move.getTarget())].setPosition(target)
+
+        logging.debug('call to makeMove(move): pieceString: %s')
 
     def checkMoveValid(self, move):
 
@@ -102,7 +126,8 @@ class Game:
         # There is no piece at this coord
         if move.getPiece() is None:
             print("There is no piece here!")
-            logging.error("Player \"%s\" attempted to move a piece from somewhere there was not a piece" % (move.getPlayer().getName()))
+            logging.error("Player \"%s\" attempted to move a piece from somewhere there was not a piece" % (
+                move.getPlayer().getName()))
             return False
 
         # The Player who made the move does not own the piece
@@ -113,41 +138,20 @@ class Game:
 
         # The Target is not Empty
         if move.getTarget() in self.__pieces.keys():
-            logging.error("Player \"%s\" attempted to move the piece at position %s, to position %s which is not empty" % (move.getPlayer().getName(), move.getPiece().getPosition(), move.getTarget()))
+            logging.error(
+                "Player \"%s\" attempted to move the piece at position %s, to position %s which is not empty" % (
+                move.getPlayer().getName(), move.getPiece().getPosition(), move.getTarget()))
             print("This space is not empty!")
             return False
 
-        # TODO: extract this into helper method
-        # TODO: Kings dont follow this rule
-        # If the target is not diagonally adjacent to the piece (with no capture). This rule does not apply to Kings.
-
-        # get a row index from 0-4 of the piece and target
-        pieceColumnIndex  = (int(move.getPiece().getPosition()) - 1) % 5
-        targetColumnIndex = (int(move.getTarget()) - 1) % 5
-        pieceRow = int(move.getPiece().getPosition() / 5) + 1
-
-        logging.debug("pieceColumnIndex: %s. targetColumnIndex: %s. pieceRow:%s. pieceRowEven: %s" % (pieceColumnIndex, targetColumnIndex, pieceRow,  pieceRow % 2 == 0))
-
-        # In even Rows the diagonally adjacent pieces are in column indices equal to or + 1 of the piece's column
-        # In Odd rows it is equal to or -1
-        if not pieceColumnIndex == targetColumnIndex:
-
-            if pieceRow % 2 == 0 and not pieceColumnIndex - 1 == targetColumnIndex:
-                logging.error("Player \"%s\" attempted to move the piece at %s to %s, but this piece cannot move there" % (move.getPlayer().getName(), move.getPiece().getPosition(), move.getTarget()))
-                print("This piece cannot move there!")
-                return False
-
-            if pieceRow % 2 != 0 == "B" and not pieceColumnIndex + 1 == targetColumnIndex:
-                logging.error("Player \"%s\" attempted to move the piece at %s to %s, but this piece cannot move there" % (move.getPlayer().getName(), move.getPiece().getPosition(), move.getTarget()))
-                print("This piece cannot move there!")
-                return False
-
-        # TODO: For kings we must check that the target is diagonal from the piece
+        # If the given type of piece cannot move to the given target square
+        if not self.__checkMoveTargetValid(move):
+            return False
 
         return True
 
-#    def evaluateGameWon(self):
-#        return
+    #def evaluateGameWon(self):
+    #   return
 
     def endGame(self):
         self.__gameOver = True
@@ -192,18 +196,63 @@ class Game:
         return self.getPlayerOne() if self.__player1.getScore() > self.__player2.getScore() else self.getPlayerOne
 
     def getPiece(self, coordinate):
-        if not coordinate in self.__pieces.keys():
+        logging.debug("call to getPiece(): coordinate: %s Pieces: %s \n\r Keys: %s" % (coordinate, self.__getPiecesString(), self.__pieces.keys()))
+
+        if not str(coordinate) in self.__pieces.keys():
             return None
 
         return self.__pieces[str(coordinate)]
 
     # Helpers
 
-    def __showPieces(self):
+    # Displays a list of piece strings to the screen
+    def __getPiecesString(self):
 
         line = ""
         ps = self.__pieces
         for k in ps:
             line += " %s%s:%s" % (ps[k].getAllegiance(), ps[k].getPieceState(), k)
 
-        print(line)
+        return line
+
+    def __checkMoveTargetValid(self, move):
+
+        # TODO: extract this into helper method
+        # If the target is not diagonally adjacent to the piece (with no capture). This rule does not apply to Kings.
+        if move.getPiece().getPieceState() != "K":
+
+            pieceCoord = Game.getCartesianCoordinate(move.getPiece().getPosition())
+            targetCoord = Game.getCartesianCoordinate(move.getTarget())
+
+            validMoves = []
+            if move.getPiece().getAllegiance() == "W":
+
+                validMoves = [tuple([pieceCoord[0] + 1, pieceCoord[1] - 1]),
+                              tuple([pieceCoord[0] - 1, pieceCoord[1] - 1])]
+            else:
+
+                validMoves = [tuple([pieceCoord[0] + 1, pieceCoord[1] + 1]),
+                              tuple([pieceCoord[0] - 1, pieceCoord[1] + 1])]
+
+            if targetCoord not in validMoves:
+                return False
+
+        if move.getPiece().getPieceState() == "K":
+
+            pieceBoardCoord = Game.getCartesianCoordinate(move.getPiece().getPosition())
+            targetBoardCoord = Game.getCartesianCoordinate(move.getTarget())
+
+            columnDiff = targetBoardCoord[0] - pieceBoardCoord[0]
+            rowDiff = targetBoardCoord[1] - pieceBoardCoord[1]
+
+            logging.debug("call to checkMoveValid(self, move): piece: %s. target: %s. absRowDiff: %s. absColDiff: %s"
+                          % (pieceBoardCoord, targetBoardCoord, abs(rowDiff), abs(columnDiff)))
+
+            if abs(rowDiff) != abs(columnDiff):
+                print("Not even a king can move there!")
+                logging.error(
+                    "Player \"%s\" attempted to move the king piece at %s to %s but a this piece cannot move there" % (
+                    move.getPlayer().getName(), move.getPiece().getPosition(), move.getTarget()))
+                return False
+
+        return True

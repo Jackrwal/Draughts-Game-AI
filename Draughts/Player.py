@@ -23,7 +23,7 @@ class Player:
             return 'q'
 
         moveSplit = move.split(':')
-        return Move(self, game.getPiece(moveSplit[0]), moveSplit[1])
+        return Move(self, game.getPiece(int(moveSplit[0])), int(moveSplit[1]))
 
     # getters setters
 
